@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// Baca port aplikasi dari environment variable
-	port := os.Getenv("APP_PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
