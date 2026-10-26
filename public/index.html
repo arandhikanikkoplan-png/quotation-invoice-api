@@ -3,14 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Quotation & Invoice App</title>
+    <title>Dashboard — Quotation & Invoice Manager</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <header class="navbar">
-        <h2>Quotation & Invoice Manager</h2>
+        <div class="brand-wrapper">
+            <div class="brand-logo-icon">Q</div>
+            <div>
+                <h2>Quotation & Invoice Manager</h2>
+                <span class="brand-subtitle">Sistem Pengelolaan Penawaran & Tagihan Terpadu</span>
+            </div>
+        </div>
         <div class="user-info">
-            <span id="user-display">Memuat...</span>
+            <div class="user-badge">
+                <span id="user-display">Memuat profil...</span>
+            </div>
             <button class="btn btn-secondary btn-sm" onclick="logout()">Keluar</button>
         </div>
     </header>
@@ -18,9 +26,15 @@
     <div class="container">
         <!-- Tab Navigasi -->
         <div class="nav-pills">
-            <button class="pill-btn active" id="pill-customers" onclick="switchSection('customers')">Pelanggan</button>
-            <button class="pill-btn" id="pill-quotations" onclick="switchSection('quotations')">Quotation (Penawaran)</button>
-            <button class="pill-btn" id="pill-invoices" onclick="switchSection('invoices')">Invoice (Tagihan)</button>
+            <button class="pill-btn active" id="pill-customers" onclick="switchSection('customers')">
+                👥 Pelanggan
+            </button>
+            <button class="pill-btn" id="pill-quotations" onclick="switchSection('quotations')">
+                📋 Quotation (Penawaran)
+            </button>
+            <button class="pill-btn" id="pill-invoices" onclick="switchSection('invoices')">
+                💳 Invoice (Tagihan)
+            </button>
         </div>
 
         <div id="global-alert" style="display: none;" class="alert"></div>
@@ -28,73 +42,79 @@
         <!-- Section 1: Customers -->
         <section id="sec-customers" class="card">
             <div class="card-header">
-                <h3>Daftar Pelanggan</h3>
-                <button class="btn btn-primary btn-sm" onclick="openCustomerModal()" style="width: auto;">+ Tambah Pelanggan</button>
+                <h3>👥 Daftar Pelanggan</h3>
+                <button class="btn btn-primary btn-sm" onclick="openCustomerModal()">+ Tambah Pelanggan</button>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>No. Telepon</th>
-                        <th>Alamat</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="customer-table-body">
-                    <tr><td colspan="6" style="text-align: center;">Memuat pelanggan...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Pelanggan</th>
+                            <th>Email</th>
+                            <th>No. Telepon</th>
+                            <th>Alamat</th>
+                            <th style="min-width: 90px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-table-body">
+                        <tr><td colspan="6" style="text-align: center;">Memuat pelanggan...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <!-- Section 2: Quotations -->
         <section id="sec-quotations" class="card" style="display: none;">
             <div class="card-header">
-                <h3>Daftar Penawaran (Quotation)</h3>
-                <button class="btn btn-primary btn-sm" onclick="openQuotationModal()" style="width: auto;">+ Buat Penawaran</button>
+                <h3>📋 Daftar Penawaran Harga (Quotation)</h3>
+                <button class="btn btn-primary btn-sm" onclick="openQuotationModal()">+ Buat Penawaran</button>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>No. Quotation</th>
-                        <th>Pelanggan</th>
-                        <th>Tanggal</th>
-                        <th>Subtotal</th>
-                        <th>Pajak (11%)</th>
-                        <th>Grand Total</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="quotation-table-body">
-                    <tr><td colspan="8" style="text-align: center;">Memuat data penawaran...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No. Quotation</th>
+                            <th>Pelanggan</th>
+                            <th>Tanggal</th>
+                            <th>Subtotal</th>
+                            <th>Pajak</th>
+                            <th>Grand Total</th>
+                            <th>Status</th>
+                            <th style="min-width: 220px;">Aksi & Ekspor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quotation-table-body">
+                        <tr><td colspan="8" style="text-align: center;">Memuat data penawaran...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <!-- Section 3: Invoices -->
         <section id="sec-invoices" class="card" style="display: none;">
             <div class="card-header">
-                <h3>Daftar Tagihan (Invoice)</h3>
-                <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()" style="width: auto;">+ Buat Tagihan Langsung</button>
+                <h3>💳 Daftar Tagihan (Invoice)</h3>
+                <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">+ Buat Tagihan Langsung</button>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>No. Invoice</th>
-                        <th>Pelanggan</th>
-                        <th>Tanggal Terbit</th>
-                        <th>Jatuh Tempo</th>
-                        <th>Grand Total</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="invoice-table-body">
-                    <tr><td colspan="7" style="text-align: center;">Memuat data tagihan...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No. Invoice</th>
+                            <th>Pelanggan</th>
+                            <th>Tanggal Terbit</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Grand Total</th>
+                            <th>Status</th>
+                            <th style="min-width: 220px;">Aksi & Ekspor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-table-body">
+                        <tr><td colspan="7" style="text-align: center;">Memuat data tagihan...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </div>
 
@@ -108,21 +128,21 @@
             <form onsubmit="saveCustomer(event)">
                 <div class="form-group">
                     <label>Nama Lengkap / Perusahaan *</label>
-                    <input type="text" id="cust-name" required placeholder="PT Contoh Sukses">
+                    <input type="text" id="cust-name" required placeholder="PT Contoh Sukses Nusantara">
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="cust-email" placeholder="kontak@contoh.com">
+                    <input type="email" id="cust-email" placeholder="kontak@perusahaan.com">
                 </div>
                 <div class="form-group">
                     <label>No. Telepon / WhatsApp</label>
                     <input type="text" id="cust-phone" placeholder="08123456789">
                 </div>
                 <div class="form-group">
-                    <label>Alamat</label>
-                    <textarea id="cust-address" rows="3" placeholder="Jl. Sudirman No. 10"></textarea>
+                    <label>Alamat Lengkap</label>
+                    <textarea id="cust-address" rows="3" placeholder="Jl. Jendral Sudirman No. 10, Jakarta Pusat"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Simpan Pelanggan</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Pelanggan</button>
             </form>
         </div>
     </div>
@@ -144,17 +164,26 @@
                     <input type="number" id="quo-tax-rate" value="11" min="0" max="100" step="0.1" onchange="recalculateTotals('quo')">
                 </div>
 
-                <h5>Item Produk / Jasa</h5>
+                <h5 style="margin: 15px 0 8px 0; color: var(--text-main); font-weight: 700;">Daftar Item Produk / Layanan</h5>
                 <div id="quo-items-container"></div>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addItemRow('quo')" style="margin-bottom: 15px;">+ Tambah Baris Item</button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItemRow('quo')" style="margin-bottom: 15px;">+ Tambah Baris Item</button>
 
-                <div style="background: #f7fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-                    <div>Subtotal: <strong id="quo-subtotal-display">Rp 0</strong></div>
-                    <div>Pajak (11%): <strong id="quo-tax-display">Rp 0</strong></div>
-                    <div style="font-size: 16px; margin-top: 5px;">Grand Total: <strong id="quo-grand-total-display" style="color: #2b6cb0;">Rp 0</strong></div>
+                <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 18px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Subtotal:</span>
+                        <strong id="quo-subtotal-display">Rp 0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Pajak (PPN):</span>
+                        <strong id="quo-tax-display">Rp 0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #cbd5e1;">
+                        <span>Grand Total:</span>
+                        <strong id="quo-grand-total-display" style="color: var(--primary);">Rp 0</strong>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Simpan Quotation</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Penawaran</button>
             </form>
         </div>
     </div>
@@ -180,32 +209,52 @@
                     <input type="number" id="inv-tax-rate" value="11" min="0" max="100" step="0.1" onchange="recalculateTotals('inv')">
                 </div>
 
-                <h5>Item Produk / Jasa</h5>
+                <h5 style="margin: 15px 0 8px 0; color: var(--text-main); font-weight: 700;">Daftar Item Tagihan</h5>
                 <div id="inv-items-container"></div>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addItemRow('inv')" style="margin-bottom: 15px;">+ Tambah Baris Item</button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItemRow('inv')" style="margin-bottom: 15px;">+ Tambah Baris Item</button>
 
-                <div style="background: #f7fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-                    <div>Subtotal: <strong id="inv-subtotal-display">Rp 0</strong></div>
-                    <div>Pajak: <strong id="inv-tax-display">Rp 0</strong></div>
-                    <div style="font-size: 16px; margin-top: 5px;">Grand Total: <strong id="inv-grand-total-display" style="color: #2b6cb0;">Rp 0</strong></div>
+                <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 18px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Subtotal:</span>
+                        <strong id="inv-subtotal-display">Rp 0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Pajak (PPN):</span>
+                        <strong id="inv-tax-display">Rp 0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #cbd5e1;">
+                        <span>Grand Total:</span>
+                        <strong id="inv-grand-total-display" style="color: var(--primary);">Rp 0</strong>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Simpan Invoice</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Invoice</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal Detail Transaksi -->
+    <!-- Modal Detail Dokumen Terpadu (Quotation & Invoice dengan Ekspor PDF) -->
     <div id="modal-detail" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 id="detail-title">Detail Transaksi</h4>
-                <button class="close-btn" onclick="closeModal('modal-detail')">&times;</button>
+        <div class="modal-content modal-document">
+            <div class="doc-modal-header">
+                <div class="doc-modal-title">
+                    <span id="detail-title">Detail Dokumen</span>
+                </div>
+                <div class="doc-modal-actions" id="detail-actions-bar">
+                    <!-- Tombol Ekspor PDF, Cetak, dan Aksi Status -->
+                </div>
             </div>
-            <div id="detail-body">Memuat...</div>
+            <div class="doc-scroll-container">
+                <div id="detail-body">Memuat dokumen...</div>
+            </div>
         </div>
     </div>
 
+    <!-- Container tersembunyi untuk ekspor PDF langsung dari tabel -->
+    <div id="pdf-export-hidden" style="position: absolute; left: -9999px; top: -9999px; width: 800px; background: #ffffff;"></div>
+
+    <!-- Scripts -->
+    <script src="/static/js/html2pdf.bundle.min.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>

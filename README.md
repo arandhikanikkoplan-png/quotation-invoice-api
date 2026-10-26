@@ -22,17 +22,24 @@ Dibangun menggunakan:
    - Pelanggan tidak dapat dihapus jika masih memiliki penawaran atau tagihan terkait.
 3. **Manajemen Penawaran Harga (Quotations):**
    - Pembuatan penawaran dengan penomoran otomatis (`QUO-YYYYMMDD-XXXX`).
-   - Penambahan banyak item barang/jasa secara dinamis.
+   - Penambahan banyak item barang/jasa secara dinamis dengan input responsif.
    - Perhitungan otomatis subtotal, pajak PPN (default 11%), dan grand total.
    - Perubahan status: `draft`, `sent`, `accepted`, `rejected`.
    - Konversi langsung quotation yang berstatus `accepted` menjadi invoice.
+   - Detail penawaran resmi berformat lembar dokumen bisnis profesional.
+   - Ekspor penawaran ke file PDF berkualitas tinggi (langsung dari tabel atau detail).
 4. **Manajemen Tagihan (Invoices):**
    - Pembuatan invoice langsung atau turunan dari quotation yang disetujui.
    - Penomoran otomatis (`INV-YYYYMMDD-XXXX`).
    - Penentuan tanggal terbit dan tanggal jatuh tempo.
    - Pengubahan status pembayaran: `unpaid`, `paid`, `cancelled`.
-5. **Frontend Web Terintegrasi:**
-   - Tersedia di browser melalui `http://localhost:8080/`.
+   - Detail faktur tagihan lengkap dengan instruksi transfer pembayaran, jatuh tempo, dan tanda tangan pengesahan.
+   - Ekspor invoice ke file PDF berkualitas tinggi (langsung dari tabel atau detail).
+5. **Antarmuka Web Modern & Responsif di Segala Resolusi:**
+   - Mendukung penuh resolusi *Mobile* (ponsel layar kecil < 480px & standar < 768px), *Tablet* (768px - 992px), *Desktop* (1024px - 1440px), serta layar lebar *Ultra-wide* (> 1400px).
+   - Tabel responsif (*horizontal scroll* halus tanpa merusak tata letak).
+   - Pratinjau dokumen penawaran dan invoice bergaya A4 resmi.
+   - Optimasi Cetak / Print to PDF berstandar A4 (`@media print`).
 
 ---
 

@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk / Daftar — Quotation & Invoice App</title>
+    <title>Masuk / Daftar — Quotation & Invoice Manager</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Quotation & Invoice</h1>
-            <p>Kelola penawaran dan tagihan bisnis Anda</p>
+            <div class="auth-logo-badge">Q</div>
+            <h1>Quotation &amp; Invoice</h1>
+            <p>Kelola penawaran harga &amp; faktur tagihan bisnis Anda</p>
         </div>
 
         <div class="tabs">
             <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Masuk</button>
-            <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Daftar Akun</button>
+            <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Daftar Akun Baru</button>
         </div>
 
         <div id="alert-box" style="display: none;" class="alert"></div>
@@ -30,14 +31,14 @@
                 <label for="login-password">Kata Sandi</label>
                 <input type="password" id="login-password" required placeholder="••••••••">
             </div>
-            <button type="submit" class="btn btn-primary">Masuk</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Masuk ke Akun</button>
         </form>
 
         <!-- Form Register -->
         <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
             <div class="form-group">
-                <label for="reg-name">Nama Lengkap</label>
-                <input type="text" id="reg-name" required placeholder="Budi Santoso">
+                <label for="reg-name">Nama Lengkap / Perusahaan</label>
+                <input type="text" id="reg-name" required placeholder="Budi Santoso (PT Sukses)">
             </div>
             <div class="form-group">
                 <label for="reg-email">Alamat Email</label>
@@ -47,7 +48,7 @@
                 <label for="reg-password">Kata Sandi (Min. 6 Karakter)</label>
                 <input type="password" id="reg-password" required minlength="6" placeholder="••••••••">
             </div>
-            <button type="submit" class="btn btn-primary">Daftar Sekarang</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Daftar Sekarang</button>
         </form>
     </div>
 
@@ -91,7 +92,7 @@
         async function handleLogin(e) {
             e.preventDefault();
             hideAlert();
-            const email = document.getElementById("login-email").value;
+            const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value;
 
             try {
@@ -118,8 +119,8 @@
         async function handleRegister(e) {
             e.preventDefault();
             hideAlert();
-            const name = document.getElementById("reg-name").value;
-            const email = document.getElementById("reg-email").value;
+            const name = document.getElementById("reg-name").value.trim();
+            const email = document.getElementById("reg-email").value.trim();
             const password = document.getElementById("reg-password").value;
 
             try {
@@ -134,8 +135,8 @@
                     return;
                 }
 
-                showAlert("Pendaftaran berhasil! Silakan masuk.", true);
-                setTimeout(() => switchTab("login"), 1500);
+                showAlert("Pendaftaran berhasil! Mengalihkan ke tab masuk...", true);
+                setTimeout(() => switchTab("login"), 1400);
             } catch (err) {
                 showAlert("Terjadi kesalahan jaringan atau server belum menyala.");
             }

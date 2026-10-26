@@ -11,6 +11,7 @@ type Invoice struct {
 	CustomerID    uint              `gorm:"not null;index" json:"customer_id"`
 	Customer      *Customer         `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 	QuotationID   *uint             `gorm:"index" json:"quotation_id,omitempty"`
+	Quotation     *Quotation        `gorm:"foreignKey:QuotationID" json:"quotation,omitempty"`
 	InvoiceNumber string            `gorm:"size:50;not null;uniqueIndex" json:"invoice_number"`
 	IssueDate     time.Time         `json:"issue_date"`
 	DueDate       time.Time         `json:"due_date"`

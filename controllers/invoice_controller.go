@@ -25,7 +25,7 @@ func GetInvoices(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 
 	var invoices []models.Invoice
-	if err := config.DB.Preload("Customer").Where("user_id = ?", userID).Order("id desc").Find(&invoices).Error; err != nil {
+	if err := config.DB.Preload("Customer").Preload("Quotation").Where("user_id = ?", userID).Order("id desc").Find(&invoices).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil daftar invoice"})
 		return
 	}
@@ -39,7 +39,7 @@ func GetInvoiceDetail(c *gin.Context) {
 	id := c.Param("id")
 
 	var invoice models.Invoice
-	if err := config.DB.Preload("Customer").Where("id = ? AND user_id = ?", id, userID).First(&invoice).Error; err != nil {
+	if err := config.DB.Preload("Customer").Preload("Quotation").Where("id = ? AND user_id = ?", id, userID).First(&invoice).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice tidak ditemukan atau Anda tidak memiliki akses"})
 		return
 	}
