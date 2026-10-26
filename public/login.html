@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk / Daftar — Quotation & Invoice App</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Quotation & Invoice</h1>
+            <p>Kelola penawaran dan tagihan bisnis Anda</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Masuk</button>
+            <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Daftar Akun</button>
+        </div>
+
+        <div id="alert-box" style="display: none;" class="alert"></div>
+
+        <!-- Form Login -->
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="login-email">Alamat Email</label>
+                <input type="email" id="login-email" required placeholder="nama@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Kata Sandi</label>
+                <input type="password" id="login-password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary">Masuk</button>
+        </form>
+
+        <!-- Form Register -->
+        <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
+            <div class="form-group">
+                <label for="reg-name">Nama Lengkap</label>
+                <input type="text" id="reg-name" required placeholder="Budi Santoso">
+            </div>
+            <div class="form-group">
+                <label for="reg-email">Alamat Email</label>
+                <input type="email" id="reg-email" required placeholder="nama@email.com">
+            </div>
+            <div class="form-group">
+                <label for="reg-password">Kata Sandi (Min. 6 Karakter)</label>
+                <input type="password" id="reg-password" required minlength="6" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary">Daftar Sekarang</button>
+        </form>
+    </div>
+
+    <script>
+        // Redirect jika sudah login
+        if (localStorage.getItem("jwt_token")) {
+            window.location.href = "/";
+        }
+
+        function switchTab(type) {
+            const loginForm = document.getElementById("login-form");
+            const regForm = document.getElementById("register-form");
+            const tabLogin = document.getElementById("tab-login");
+            const tabReg = document.getElementById("tab-register");
+            hideAlert();
+
+            if (type === "login") {
+                loginForm.style.display = "block";
+                regForm.style.display = "none";
+                tabLogin.classList.add("active");
+                tabReg.classList.remove("active");
+            } else {
+                loginForm.style.display = "none";
+                regForm.style.display = "block";
+                tabLogin.classList.remove("active");
+                tabReg.classList.add("active");
+            }
+        }
+
+        function showAlert(msg, isSuccess = false) {
+            const box = document.getElementById("alert-box");
+            box.textContent = msg;
+            box.className = isSuccess ? "alert alert-success" : "alert alert-error";
+            box.style.display = "block";
+        }
+
+        function hideAlert() {
+            document.getElementById("alert-box").style.display = "none";
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideAlert();
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showAlert(data.error || "Gagal masuk, periksa email dan kata sandi");
+                    return;
+                }
+
+                localStorage.setItem("jwt_token", data.token);
+                localStorage.setItem("user_name", data.user.name);
+                localStorage.setItem("user_email", data.user.email);
+                window.location.href = "/";
+            } catch (err) {
+                showAlert("Terjadi kesalahan jaringan atau server belum menyala.");
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            hideAlert();
+            const name = document.getElementById("reg-name").value;
+            const email = document.getElementById("reg-email").value;
+            const password = document.getElementById("reg-password").value;
+
+            try {
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showAlert(data.error || "Gagal mendaftar");
+                    return;
+                }
+
+                showAlert("Pendaftaran berhasil! Silakan masuk.", true);
+                setTimeout(() => switchTab("login"), 1500);
+            } catch (err) {
+                showAlert("Terjadi kesalahan jaringan atau server belum menyala.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Quotation & Invoice App</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <h2>Quotation & Invoice Manager</h2>
+        <div class="user-info">
+            <span id="user-display">Memuat...</span>
+            <button class="btn btn-secondary btn-sm" onclick="logout()">Keluar</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Tab Navigasi -->
+        <div class="nav-pills">
+            <button class="pill-btn active" id="pill-customers" onclick="switchSection('customers')">Pelanggan</button>
+            <button class="pill-btn" id="pill-quotations" onclick="switchSection('quotations')">Quotation (Penawaran)</button>
+            <button class="pill-btn" id="pill-invoices" onclick="switchSection('invoices')">Invoice (Tagihan)</button>
+        </div>
+
+        <div id="global-alert" style="display: none;" class="alert"></div>
+
+        <!-- Section 1: Customers -->
+        <section id="sec-customers" class="card">
+            <div class="card-header">
+                <h3>Daftar Pelanggan</h3>
+                <button class="btn btn-primary btn-sm" onclick="openCustomerModal()" style="width: auto;">+ Tambah Pelanggan</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>No. Telepon</th>
+                        <th>Alamat</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="customer-table-body">
+                    <tr><td colspan="6" style="text-align: center;">Memuat pelanggan...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section 2: Quotations -->
+        <section id="sec-quotations" class="card" style="display: none;">
+            <div class="card-header">
+                <h3>Daftar Penawaran (Quotation)</h3>
+                <button class="btn btn-primary btn-sm" onclick="openQuotationModal()" style="width: auto;">+ Buat Penawaran</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No. Quotation</th>
+                        <th>Pelanggan</th>
+                        <th>Tanggal</th>
+                        <th>Subtotal</th>
+                        <th>Pajak (11%)</th>
+                        <th>Grand Total</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="quotation-table-body">
+                    <tr><td colspan="8" style="text-align: center;">Memuat data penawaran...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section 3: Invoices -->
+        <section id="sec-invoices" class="card" style="display: none;">
+            <div class="card-header">
+                <h3>Daftar Tagihan (Invoice)</h3>
+                <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()" style="width: auto;">+ Buat Tagihan Langsung</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No. Invoice</th>
+                        <th>Pelanggan</th>
+                        <th>Tanggal Terbit</th>
+                        <th>Jatuh Tempo</th>
+                        <th>Grand Total</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-table-body">
+                    <tr><td colspan="7" style="text-align: center;">Memuat data tagihan...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <!-- Modal Tambah Pelanggan -->
+    <div id="modal-customer" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Tambah Pelanggan Baru</h4>
+                <button class="close-btn" onclick="closeModal('modal-customer')">&times;</button>
+            </div>
+            <form onsubmit="saveCustomer(event)">
+                <div class="form-group">
+                    <label>Nama Lengkap / Perusahaan *</label>
+                    <input type="text" id="cust-name" required placeholder="PT Contoh Sukses">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="cust-email" placeholder="kontak@contoh.com">
+                </div>
+                <div class="form-group">
+                    <label>No. Telepon / WhatsApp</label>
+                    <input type="text" id="cust-phone" placeholder="08123456789">
+                </div>
+                <div class="form-group">
+                    <label>Alamat</label>
+                    <textarea id="cust-address" rows="3" placeholder="Jl. Sudirman No. 10"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan Pelanggan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Buat Quotation -->
+    <div id="modal-quotation" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Buat Penawaran Harga Baru (Quotation)</h4>
+                <button class="close-btn" onclick="closeModal('modal-quotation')">&times;</button>
+            </div>
+            <form onsubmit="saveQuotation(event)">
+                <div class="form-group">
+                    <label>Pilih Pelanggan *</label>
+                    <select id="quo-customer" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Persentase Pajak (%)</label>
+                    <input type="number" id="quo-tax-rate" value="11" min="0" max="100" step="0.1" onchange="recalculateTotals('quo')">
+                </div>
+
+                <h5>Item Produk / Jasa</h5>
+                <div id="quo-items-container"></div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addItemRow('quo')" style="margin-bottom: 15px;">+ Tambah Baris Item</button>
+
+                <div style="background: #f7fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                    <div>Subtotal: <strong id="quo-subtotal-display">Rp 0</strong></div>
+                    <div>Pajak (11%): <strong id="quo-tax-display">Rp 0</strong></div>
+                    <div style="font-size: 16px; margin-top: 5px;">Grand Total: <strong id="quo-grand-total-display" style="color: #2b6cb0;">Rp 0</strong></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Simpan Quotation</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Buat Invoice Langsung -->
+    <div id="modal-invoice" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Buat Tagihan Langsung (Invoice)</h4>
+                <button class="close-btn" onclick="closeModal('modal-invoice')">&times;</button>
+            </div>
+            <form onsubmit="saveInvoice(event)">
+                <div class="form-group">
+                    <label>Pilih Pelanggan *</label>
+                    <select id="inv-customer" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Jatuh Tempo</label>
+                    <input type="date" id="inv-due-date">
+                </div>
+                <div class="form-group">
+                    <label>Persentase Pajak (%)</label>
+                    <input type="number" id="inv-tax-rate" value="11" min="0" max="100" step="0.1" onchange="recalculateTotals('inv')">
+                </div>
+
+                <h5>Item Produk / Jasa</h5>
+                <div id="inv-items-container"></div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addItemRow('inv')" style="margin-bottom: 15px;">+ Tambah Baris Item</button>
+
+                <div style="background: #f7fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                    <div>Subtotal: <strong id="inv-subtotal-display">Rp 0</strong></div>
+                    <div>Pajak: <strong id="inv-tax-display">Rp 0</strong></div>
+                    <div style="font-size: 16px; margin-top: 5px;">Grand Total: <strong id="inv-grand-total-display" style="color: #2b6cb0;">Rp 0</strong></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Simpan Invoice</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail Transaksi -->
+    <div id="modal-detail" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="detail-title">Detail Transaksi</h4>
+                <button class="close-btn" onclick="closeModal('modal-detail')">&times;</button>
+            </div>
+            <div id="detail-body">Memuat...</div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

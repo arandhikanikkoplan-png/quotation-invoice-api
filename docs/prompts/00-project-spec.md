@@ -7,25 +7,65 @@
 ## 1. Informasi Aplikasi
 
 **Nama aplikasi:**  
-`[Isi nama aplikasi]`
+Quotation & Invoice API
 
 **Deskripsi aplikasi:**  
-`[Jelaskan tujuan aplikasi dalam 1–3 kalimat]`
+Quotation & Invoice API adalah aplikasi REST API untuk mengelola penawaran harga (quotation) dan tagihan penjualan (invoice) secara digital. Aplikasi memungkinkan pengguna mengelola data pelanggan, produk atau jasa, membuat quotation, mengubah quotation menjadi invoice, serta memantau status pembayaran.
 
 **Target pengguna:**  
-`[Siapa yang akan menggunakan aplikasi?]`
+UMKM dan pemilik usaha.
+
+Freelancer dan konsultan.
+
+Perusahaan jasa dan penyedia layanan teknologi.
+
+Admin penjualan dan staf keuangan.
+
+Developer yang ingin membangun sistem administrasi bisnis.
 
 **Masalah yang ingin diselesaikan:**  
-`[Jelaskan masalah yang ingin diselesaikan oleh aplikasi]`
+Pembuatan quotation dan invoice secara manual sering menyebabkan kesalahan perhitungan harga, pajak, total tagihan, dan pencatatan pembayaran. Aplikasi ini membantu mengotomatisasi perhitungan, menyimpan data secara terstruktur, mengurangi kesalahan administrasi, dan mempermudah pemantauan status tagihan pelanggan.
 
 ## 2. Kebutuhan Aplikasi
 
 Fitur utama aplikasi:
 
-1. `[Fitur utama 1]`
-2. `[Fitur utama 2]`
-3. `[Fitur utama 3]`
-4. `[Fitur tambahan, jika ada]`
+1. 	Manajemen Pelanggan (Customers)
+    o	Menambah pelanggan.
+    o	Melihat daftar dan detail pelanggan.
+    o	Mengubah data pelanggan.
+    o	Menghapus pelanggan jika tidak memiliki transaksi   terkait.
+
+2.	Manajemen Quotation
+    o	Membuat penawaran harga untuk pelanggan.
+    o	Menambahkan beberapa item produk atau jasa.
+    o	Menghitung subtotal, pajak, dan total secara otomatis.
+    o	Mengubah status quotation: draft, sent, accepted, atau rejected.
+    o	Mengubah quotation yang berstatus accepted menjadi invoice.
+
+3.	Manajemen Invoice
+    o	Membuat invoice secara langsung atau dari quotation yang disetujui.
+    o	Membuat nomor invoice secara otomatis.
+    o	Menentukan tanggal terbit dan tanggal jatuh tempo.
+    o	Menghitung total tagihan secara otomatis.
+    o	Mengubah status invoice: unpaid, paid, atau cancelled.
+
+4.	Manajemen Item Transaksi
+    o	Menyimpan nama produk atau jasa.
+    o	Menentukan kuantitas dan harga satuan.
+    o	Menghitung total setiap item: kuantitas × harga satuan.
+
+5.	Perhitungan Otomatis
+    o	Subtotal = jumlah seluruh item.
+    o	Pajak = persentase pajak × subtotal.
+    o	Grand Total = subtotal + pajak.
+    o	Persentase pajak dapat diatur saat membuat transaksi, dengan nilai awal 11%.
+
+6.	REST API CRUD
+    o	GET untuk membaca data.
+    o	POST untuk membuat data.
+    o	PUT untuk memperbarui data.
+    o	DELETE untuk menghapus data.
 
 **Halaman aplikasi:**
 
@@ -42,7 +82,7 @@ Pilih satu opsi untuk setiap komponen yang diperlukan. Sesuaikan dengan kebutuha
 ### A. Backend Framework
 
 - [ ] 1. Go Standard Library (`net/http`)
-- [ ] 2. Gin
+- [x] 2. Gin
 - [ ] 3. Lainnya sebutkan
 
 **Pilihan saya:** `[Isi nomor pilihan]`
@@ -50,7 +90,7 @@ Pilih satu opsi untuk setiap komponen yang diperlukan. Sesuaikan dengan kebutuha
 ### B. ORM (Object-Relational Mapping)
 
 - [ ] 1. Tidak menggunakan ORM (SQL manual)
-- [ ] 2. GORM
+- [x] 2. GORM
 - [ ] 3. Lainnya sebutkan
 
 **Pilihan saya:** `[Isi nomor pilihan]`
@@ -59,7 +99,7 @@ Pilih satu opsi untuk setiap komponen yang diperlukan. Sesuaikan dengan kebutuha
 
 ### C. Database
 
-- [ ] 1. PostgreSQL
+- [x] 1. PostgreSQL
 - [ ] 2. MySQL
 - [ ] 3. SQLite
 
@@ -152,16 +192,43 @@ SESSION_SECRET=replace-with-a-random-secret
 
 ## 6. Batasan Pengembangan (BOLEH DIUBAH SESUAI KEINGINAN PESERTA PELATIHAN)
 
-- [ ] Struktur folder sederhana.
-- [ ] Kode mudah dipahami pemula.
-- [ ] Tidak menambahkan teknologi di luar pilihan tanpa persetujuan.
+- [x] Struktur folder sederhana.
+quotation-invoice-api/
+├── main.go
+├── config/
+│   └── database.go
+├── models/
+│   ├── customer.go
+│   ├── quotation.go
+│   ├── invoice.go
+│   └── transaction_item.go
+├── handlers/
+│   ├── customer_handler.go
+│   ├── quotation_handler.go
+│   └── invoice_handler.go
+├── services/
+│   └── transaction_service.go
+├── routes/
+│   └── routes.go
+├── .env
+├── .env.example
+├── .gitignore
+├── go.mod
+└── README.md
+
+- [x] Kode mudah dipahami pemula.
+- [x] Tidak menambahkan teknologi di luar pilihan tanpa persetujuan.
 - [ ] Memisahkan frontend dan backend.
 - [ ] Menggunakan environment variable untuk konfigurasi.
-- [ ] Membuat pengujian dasar.
+- [x] Membuat pengujian dasar.
 - [ ] Menjelaskan kode dan perubahan yang dibuat AI.
 
 **Batasan tambahan:**
-`[Isi jika ada]`
+•	Upload logo dan tanda tangan.
+•	Ekspor PDF.
+•	Integrasi pembayaran online.
+•	Pengiriman invoice melalui email atau WhatsApp.
+
 
 ## 6. Fitur yang Tidak Dibutuhkan
 
