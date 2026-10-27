@@ -791,6 +791,21 @@ function translateStatus(st) {
 }
 
 // ================= PENGATURAN PERUSAHAAN & LOGO =================
+function bindLogoPicker() {
+    const picker = document.getElementById("btn-pick-logo");
+    const input = document.getElementById("logo-file");
+    if (!picker || !input) return;
+
+    // Label sudah membuka dialog file secara native saat diklik/diketuk.
+    // Ini hanya fallback agar kontrol tetap bisa dipakai lewat keyboard.
+    picker.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            input.click();
+        }
+    });
+}
+
 function openCompanyModal() {
     document.getElementById("comp-name").value = profile.company_name || "";
     document.getElementById("comp-email").value = profile.company_email || "";
@@ -1345,6 +1360,7 @@ async function fetchUserProfile() {
 function initApp() {
     renderBranding();
     bindModalDismiss();
+    bindLogoPicker();
     loadCustomers();
     fetchUserProfile();
 }

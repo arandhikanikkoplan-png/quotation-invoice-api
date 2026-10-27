@@ -7,7 +7,7 @@
     <meta name="description" content="Kelola penawaran harga dan invoice bisnis Anda dalam satu dashboard.">
     <title>Dashboard — Quotation &amp; Invoice Manager</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=2">
 </head>
 <body>
     <header class="navbar">
@@ -294,9 +294,11 @@
                     <div class="logo-uploader-body">
                         <strong>Logo Perusahaan</strong>
                         <p class="form-hint">Format PNG, JPG, atau WebP. Ukuran maksimal 2 MB. Logo tampil di penawaran &amp; invoice.</p>
-                        <input type="file" id="logo-file" accept="image/png,image/jpeg,image/webp" onchange="handleLogoSelected(event)" hidden>
+                        <input type="file" id="logo-file" class="logo-file-input" accept="image/png,image/jpeg,image/webp" onchange="handleLogoSelected(event)">
                         <div class="logo-uploader-actions">
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('logo-file').click()">Pilih Logo</button>
+                            <label for="logo-file" class="btn btn-outline-primary btn-sm logo-pick-btn" id="btn-pick-logo" tabindex="0">
+                                Pilih Logo
+                            </label>
                             <button type="button" class="btn btn-outline-danger btn-sm" id="btn-remove-logo" onclick="removeLogo()">Hapus Logo</button>
                         </div>
                         <span class="form-hint" id="logo-upload-status"></span>
@@ -372,6 +374,6 @@
     <div id="print-area" aria-hidden="true"></div>
 
     <script src="/static/js/html2pdf.bundle.min.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/app.js?v=2"></script>
 </body>
 </html>

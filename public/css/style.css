@@ -1020,6 +1020,32 @@ select:disabled {
     margin-top: 6px;
 }
 
+/* Input file tetap ada di DOM (bukan display:none) agar tombol "Pilih Logo"
+   tetap memicu dialog pemilih file dengan andal di semua peramban desktop. */
+.logo-file-input {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+}
+
+.logo-pick-btn {
+    cursor: pointer;
+    user-select: none;
+}
+
+.logo-pick-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+}
+
 /* ==========================================================================
    DOCUMENT PREVIEW (A4-like)
    ========================================================================== */
