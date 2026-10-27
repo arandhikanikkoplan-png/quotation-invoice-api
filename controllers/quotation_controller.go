@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"go_vibe/config"
@@ -16,7 +17,7 @@ type CreateQuotationInput struct {
 	QuotationNumber string               `json:"quotation_number"`
 	IssueDate       string               `json:"issue_date"` // format YYYY-MM-DD
 	TaxRate         *float64             `json:"tax_rate"`   // opsional, default 11%
-	Items           []services.ItemInput `json:"items" binding:"required,min=1"`
+	Items           []services.ItemInput `json:"items" binding:"required,min=1,dive"`
 }
 
 type UpdateStatusInput struct {
@@ -72,23 +73,40 @@ func CreateQuotation(c *gin.Context) {
 		return
 	}
 
-	taxRate := 11.0
-	if input.TaxRate != nil {
-		taxRate = *input.TaxRate
+	taxRate, err := resolveTaxRate(input.TaxRate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, item := range input.Items {
+		if strings.TrimSpace(item.ItemName) == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Nama item produk/layanan tidak boleh kosong"})
+			return
+		}
 	}
 
 	subtotal, taxAmount, grandTotal, processedItems := services.CalculateTotals(input.Items, taxRate)
-
-	quoNumber := input.QuotationNumber
-	if quoNumber == "" {
-		quoNumber = services.GenerateQuotationNumber()
+	for i := range processedItems {
+		processedItems[i].ItemName = strings.TrimSpace(processedItems[i].ItemName)
 	}
 
-	issueDate := time.Now()
-	if input.IssueDate != "" {
-		if parsedDate, err := time.Parse("2006-01-02", input.IssueDate); err == nil {
-			issueDate = parsedDate
-		}
+	quoNumber := strings.TrimSpace(input.QuotationNumber)
+	if len(quoNumber) > 50 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nomor quotation maksimal 50 karakter"})
+		return
+	}
+	if quoNumber == "" {
+		quoNumber = generateUniqueQuotationNumber()
+	} else if numberAlreadyUsed(&models.Quotation{}, "quotation_number", quoNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nomor quotation sudah digunakan"})
+		return
+	}
+
+	issueDate, err := parseDateOrDefault(input.IssueDate, time.Now())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	quotation := models.Quotation{
@@ -121,7 +139,10 @@ func CreateQuotation(c *gin.Context) {
 		}
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan penyimpanan quotation"})
+		return
+	}
 
 	quotation.Items = processedItems
 	quotation.Customer = &customer
@@ -188,16 +209,27 @@ func ConvertQuotationToInvoice(c *gin.Context) {
 		return
 	}
 
+	// Cegah konversi ganda pada quotation yang sama.
+	var existingInvoice int64
+	config.DB.Model(&models.Invoice{}).Where("quotation_id = ?", quotation.ID).Count(&existingInvoice)
+	if existingInvoice > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Quotation ini sudah pernah dikonversi menjadi invoice"})
+		return
+	}
+
 	// Ambil item dari quotation
 	var items []models.TransactionItem
-	config.DB.Where("transaction_type = ? AND transaction_id = ?", "quotation", quotation.ID).Find(&items)
+	if err := config.DB.Where("transaction_type = ? AND transaction_id = ?", "quotation", quotation.ID).Find(&items).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil item quotation"})
+		return
+	}
 
 	now := time.Now()
 	invoice := models.Invoice{
 		UserID:        userID,
 		CustomerID:    quotation.CustomerID,
 		QuotationID:   &quotation.ID,
-		InvoiceNumber: services.GenerateInvoiceNumber(),
+		InvoiceNumber: generateUniqueInvoiceNumber(),
 		IssueDate:     now,
 		DueDate:       now.AddDate(0, 0, 14), // Default jatuh tempo 14 hari
 		Status:        "unpaid",
@@ -232,7 +264,10 @@ func ConvertQuotationToInvoice(c *gin.Context) {
 		invoiceItems = append(invoiceItems, newItem)
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan konversi ke invoice"})
+		return
+	}
 
 	invoice.Items = invoiceItems
 	c.JSON(http.StatusCreated, gin.H{
@@ -252,6 +287,14 @@ func DeleteQuotation(c *gin.Context) {
 		return
 	}
 
+	// Quotation yang sudah menjadi invoice tidak boleh dihapus agar riwayat tetap utuh.
+	var invoiceCount int64
+	config.DB.Model(&models.Invoice{}).Where("quotation_id = ?", quotation.ID).Count(&invoiceCount)
+	if invoiceCount > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Quotation tidak dapat dihapus karena sudah dikonversi menjadi invoice"})
+		return
+	}
+
 	tx := config.DB.Begin()
 	if err := tx.Where("transaction_type = ? AND transaction_id = ?", "quotation", quotation.ID).Delete(&models.TransactionItem{}).Error; err != nil {
 		tx.Rollback()
@@ -265,6 +308,9 @@ func DeleteQuotation(c *gin.Context) {
 		return
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan penghapusan quotation"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "Quotation berhasil dihapus"})
 }

@@ -10,6 +10,9 @@
 bin/
 dist/
 
+# Uploaded company logos (runtime files)
+public/uploads/
+
 # OS and Editor files
 .DS_Store
 Thumbs.db

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"go_vibe/config"
@@ -17,7 +18,7 @@ type CreateInvoiceInput struct {
 	IssueDate     string               `json:"issue_date"` // YYYY-MM-DD
 	DueDate       string               `json:"due_date"`   // YYYY-MM-DD
 	TaxRate       *float64             `json:"tax_rate"`   // opsional, default 11%
-	Items         []services.ItemInput `json:"items" binding:"required,min=1"`
+	Items         []services.ItemInput `json:"items" binding:"required,min=1,dive"`
 }
 
 // GetInvoices mengambil daftar tagihan milik pengguna
@@ -67,30 +68,51 @@ func CreateInvoice(c *gin.Context) {
 		return
 	}
 
-	taxRate := 11.0
-	if input.TaxRate != nil {
-		taxRate = *input.TaxRate
+	taxRate, err := resolveTaxRate(input.TaxRate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, item := range input.Items {
+		if strings.TrimSpace(item.ItemName) == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Nama item produk/layanan tidak boleh kosong"})
+			return
+		}
 	}
 
 	subtotal, taxAmount, grandTotal, processedItems := services.CalculateTotals(input.Items, taxRate)
+	for i := range processedItems {
+		processedItems[i].ItemName = strings.TrimSpace(processedItems[i].ItemName)
+	}
 
-	invNumber := input.InvoiceNumber
+	invNumber := strings.TrimSpace(input.InvoiceNumber)
+	if len(invNumber) > 50 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nomor invoice maksimal 50 karakter"})
+		return
+	}
 	if invNumber == "" {
-		invNumber = services.GenerateInvoiceNumber()
+		invNumber = generateUniqueInvoiceNumber()
+	} else if numberAlreadyUsed(&models.Invoice{}, "invoice_number", invNumber) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nomor invoice sudah digunakan"})
+		return
 	}
 
-	issueDate := time.Now()
-	if input.IssueDate != "" {
-		if parsedDate, err := time.Parse("2006-01-02", input.IssueDate); err == nil {
-			issueDate = parsedDate
-		}
+	issueDate, err := parseDateOrDefault(input.IssueDate, time.Now())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	dueDate := issueDate.AddDate(0, 0, 14)
-	if input.DueDate != "" {
-		if parsedDate, err := time.Parse("2006-01-02", input.DueDate); err == nil {
-			dueDate = parsedDate
-		}
+	dueDate, err := parseDateOrDefault(input.DueDate, issueDate.AddDate(0, 0, 14))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if dueDate.Before(issueDate) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tanggal jatuh tempo tidak boleh sebelum tanggal terbit"})
+		return
 	}
 
 	invoice := models.Invoice{
@@ -123,7 +145,10 @@ func CreateInvoice(c *gin.Context) {
 		}
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan penyimpanan invoice"})
+		return
+	}
 
 	invoice.Items = processedItems
 	invoice.Customer = &customer
@@ -197,6 +222,9 @@ func DeleteInvoice(c *gin.Context) {
 		return
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyelesaikan penghapusan invoice"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "Invoice berhasil dihapus"})
 }

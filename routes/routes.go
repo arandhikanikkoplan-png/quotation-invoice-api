@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"log"
 	"net/http"
+	"os"
 
 	"go_vibe/controllers"
 	"go_vibe/middlewares"
@@ -12,6 +14,11 @@ import (
 // SetupRouter mengonfigurasi seluruh endpoint REST API dan file statis
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	// Pastikan folder unggahan logo tersedia saat aplikasi dijalankan.
+	if err := os.MkdirAll("./public/uploads/logos", 0o755); err != nil {
+		log.Printf("[PERINGATAN] Gagal menyiapkan folder logo: %v\n", err)
+	}
 
 	// Layani file statis frontend jika ada
 	r.Static("/static", "./public")
@@ -27,6 +34,7 @@ func SetupRouter() *gin.Engine {
 	})
 
 	api := r.Group("/api")
+	api.Use(middlewares.RequireDatabase())
 	{
 		// Rute Autentikasi Publik
 		auth := api.Group("/auth")
@@ -39,8 +47,11 @@ func SetupRouter() *gin.Engine {
 		protected := api.Group("")
 		protected.Use(middlewares.AuthRequired())
 		{
-			// Profil Pengguna
+			// Profil dan pengaturan perusahaan (logo, kontak, rekening)
 			protected.GET("/auth/profile", controllers.GetProfile)
+			protected.PUT("/auth/profile", controllers.UpdateProfile)
+			protected.POST("/auth/logo", controllers.UploadLogo)
+			protected.DELETE("/auth/logo", controllers.DeleteLogo)
 
 			// Manajemen Pelanggan (Customers)
 			protected.GET("/customers", controllers.GetCustomers)

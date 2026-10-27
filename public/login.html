@@ -3,56 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk / Daftar — Quotation & Invoice Manager</title>
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="description" content="Masuk atau daftar untuk mengelola penawaran harga dan invoice bisnis Anda.">
+    <title>Masuk / Daftar — Quotation &amp; Invoice Manager</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
-    <div class="auth-container">
+<body class="auth-body">
+    <main class="auth-container">
         <div class="auth-header">
-            <div class="auth-logo-badge">Q</div>
+            <div class="auth-logo-badge" aria-hidden="true">Q</div>
             <h1>Quotation &amp; Invoice</h1>
             <p>Kelola penawaran harga &amp; faktur tagihan bisnis Anda</p>
         </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Masuk</button>
-            <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Daftar Akun Baru</button>
+        <div class="tabs" role="tablist" aria-label="Pilih formulir">
+            <button type="button" class="tab-btn active" id="tab-login" role="tab" aria-selected="true" onclick="switchTab('login')">Masuk</button>
+            <button type="button" class="tab-btn" id="tab-register" role="tab" aria-selected="false" onclick="switchTab('register')">Daftar Akun</button>
         </div>
 
-        <div id="alert-box" style="display: none;" class="alert"></div>
+        <div id="alert-box" class="alert" role="alert" aria-live="polite" style="display: none;"></div>
 
         <!-- Form Login -->
         <form id="login-form" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label for="login-email">Alamat Email</label>
-                <input type="email" id="login-email" required placeholder="nama@email.com">
+                <input type="email" id="login-email" required placeholder="nama@email.com" autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="login-password">Kata Sandi</label>
-                <input type="password" id="login-password" required placeholder="••••••••">
+                <div class="password-field">
+                    <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)" aria-label="Tampilkan kata sandi">Lihat</button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Masuk ke Akun</button>
+            <button type="submit" class="btn btn-primary" id="login-submit" style="width: 100%;">Masuk ke Akun</button>
         </form>
 
         <!-- Form Register -->
         <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
             <div class="form-group">
                 <label for="reg-name">Nama Lengkap / Perusahaan</label>
-                <input type="text" id="reg-name" required placeholder="Budi Santoso (PT Sukses)">
+                <input type="text" id="reg-name" required maxlength="100" placeholder="Budi Santoso (PT Sukses)" autocomplete="name">
             </div>
             <div class="form-group">
                 <label for="reg-email">Alamat Email</label>
-                <input type="email" id="reg-email" required placeholder="nama@email.com">
+                <input type="email" id="reg-email" required placeholder="nama@email.com" autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="reg-password">Kata Sandi (Min. 6 Karakter)</label>
-                <input type="password" id="reg-password" required minlength="6" placeholder="••••••••">
+                <div class="password-field">
+                    <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('reg-password', this)" aria-label="Tampilkan kata sandi">Lihat</button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Daftar Sekarang</button>
+            <button type="submit" class="btn btn-primary" id="register-submit" style="width: 100%;">Daftar Sekarang</button>
         </form>
-    </div>
+
+        <p class="auth-footer">Kata sandi disimpan dalam bentuk hash yang aman (bcrypt).</p>
+    </main>
 
     <script>
+        const PROFILE_STORAGE_KEY = "company_profile";
+
         // Redirect jika sudah login
         if (localStorage.getItem("jwt_token")) {
             window.location.href = "/";
@@ -65,28 +78,52 @@
             const tabReg = document.getElementById("tab-register");
             hideAlert();
 
-            if (type === "login") {
-                loginForm.style.display = "block";
-                regForm.style.display = "none";
-                tabLogin.classList.add("active");
-                tabReg.classList.remove("active");
-            } else {
-                loginForm.style.display = "none";
-                regForm.style.display = "block";
-                tabLogin.classList.remove("active");
-                tabReg.classList.add("active");
-            }
+            const isLogin = type === "login";
+            loginForm.style.display = isLogin ? "block" : "none";
+            regForm.style.display = isLogin ? "none" : "block";
+            tabLogin.classList.toggle("active", isLogin);
+            tabReg.classList.toggle("active", !isLogin);
+            tabLogin.setAttribute("aria-selected", String(isLogin));
+            tabReg.setAttribute("aria-selected", String(!isLogin));
         }
 
         function showAlert(msg, isSuccess = false) {
             const box = document.getElementById("alert-box");
             box.textContent = msg;
             box.className = isSuccess ? "alert alert-success" : "alert alert-error";
-            box.style.display = "block";
+            box.style.display = "flex";
         }
 
         function hideAlert() {
             document.getElementById("alert-box").style.display = "none";
+        }
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const show = input.type === "password";
+            input.type = show ? "text" : "password";
+            button.textContent = show ? "Sembunyikan" : "Lihat";
+            button.setAttribute("aria-label", show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
+        }
+
+        function setLoading(button, isLoading, loadingText) {
+            if (!button) return;
+            if (isLoading) {
+                button.dataset.originalText = button.textContent;
+                button.textContent = loadingText;
+                button.disabled = true;
+            } else {
+                button.textContent = button.dataset.originalText || button.textContent;
+                button.disabled = false;
+            }
+        }
+
+        function rememberUser(user) {
+            if (!user) return;
+            localStorage.setItem("user_name", user.name || "");
+            localStorage.setItem("user_email", user.email || "");
+            localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(user));
         }
 
         async function handleLogin(e) {
@@ -94,25 +131,28 @@
             hideAlert();
             const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value;
+            const submitBtn = document.getElementById("login-submit");
 
+            setLoading(submitBtn, true, "Memproses...");
             try {
                 const res = await fetch("/api/auth/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password })
                 });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    showAlert(data.error || "Gagal masuk, periksa email dan kata sandi");
+                    showAlert(data.error || "Gagal masuk. Periksa email dan kata sandi Anda.");
                     return;
                 }
 
                 localStorage.setItem("jwt_token", data.token);
-                localStorage.setItem("user_name", data.user.name);
-                localStorage.setItem("user_email", data.user.email);
+                rememberUser(data.user);
                 window.location.href = "/";
             } catch (err) {
                 showAlert("Terjadi kesalahan jaringan atau server belum menyala.");
+            } finally {
+                setLoading(submitBtn, false);
             }
         }
 
@@ -122,23 +162,32 @@
             const name = document.getElementById("reg-name").value.trim();
             const email = document.getElementById("reg-email").value.trim();
             const password = document.getElementById("reg-password").value;
+            const submitBtn = document.getElementById("register-submit");
 
+            setLoading(submitBtn, true, "Mendaftarkan...");
             try {
                 const res = await fetch("/api/auth/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ name, email, password })
                 });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    showAlert(data.error || "Gagal mendaftar");
+                    showAlert(data.error || "Gagal mendaftar. Silakan coba lagi.");
                     return;
                 }
 
-                showAlert("Pendaftaran berhasil! Mengalihkan ke tab masuk...", true);
-                setTimeout(() => switchTab("login"), 1400);
+                showAlert("Pendaftaran berhasil! Silakan masuk dengan akun baru Anda.", true);
+                document.getElementById("login-email").value = email;
+                document.getElementById("login-password").value = "";
+                setTimeout(() => {
+                    switchTab("login");
+                    document.getElementById("login-password").focus();
+                }, 1200);
             } catch (err) {
                 showAlert("Terjadi kesalahan jaringan atau server belum menyala.");
+            } finally {
+                setLoading(submitBtn, false);
             }
         }
     </script>
