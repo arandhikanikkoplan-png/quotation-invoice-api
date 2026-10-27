@@ -923,10 +923,13 @@ function invoicePaymentNotes() {
     const bankHolder = (profile.bank_holder || "").trim();
 
     if (bankName || bankAccount || bankHolder) {
+        const bankLines = [`<strong>${escapeHtml(bankName || "Rekening resmi perusahaan")}</strong>`];
+        if (bankAccount) bankLines.push(`No. Rekening: <strong>${escapeHtml(bankAccount)}</strong>`);
+        if (bankHolder) bankLines.push(`a.n. <strong>${escapeHtml(bankHolder)}</strong>`);
+
         return `• Harap lakukan pembayaran penuh sebelum tanggal jatuh tempo.<br>
-            • Pembayaran dapat ditransfer ke: <strong>${escapeHtml(bankName || "Rekening resmi perusahaan")}</strong>
-            ${bankAccount ? `No. Rekening <strong>${escapeHtml(bankAccount)}</strong>` : ""}
-            ${bankHolder ? `a.n. <strong>${escapeHtml(bankHolder)}</strong>` : ""}.<br>
+            • Pembayaran dapat ditransfer ke:
+            <span class="doc-bank-details">${bankLines.join("<br>")}</span>
             • Mohon sertakan nomor invoice pada berita transfer dan konfirmasikan bukti transfer kepada tim kami.`;
     }
 
@@ -1196,7 +1199,7 @@ async function triggerPDFDownload(element, filename) {
     }
 
     const opt = {
-        margin: [10, 10, 10, 10], // Margin A4 dalam mm
+        margin: [8, 8, 8, 8], // Margin A4 dalam mm
         filename: safeFilename,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
@@ -1204,7 +1207,9 @@ async function triggerPDFDownload(element, filename) {
             useCORS: true,
             logging: false,
             backgroundColor: "#ffffff",
-            letterRendering: true
+            letterRendering: true,
+            windowWidth: 1280,
+            windowHeight: 1600
         },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css", "legacy"] }
@@ -1227,6 +1232,8 @@ async function exportDocumentPDF(type, data, filename) {
         pdfInProgress = false;
         return;
     }
+
+    element.classList.add("pdf-doc");
 
     try {
         await waitForImages(element);
